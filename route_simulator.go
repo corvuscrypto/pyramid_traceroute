@@ -9,12 +9,30 @@ import (
 	"strings"
 )
 
+type pythonType int
+
+const (
+	pString pythonType = iota
+	pInt
+	pFloat
+	pBoolean
+	pTuple
+	pList
+	pDict
+)
+
 var pythonPaths []string
 var fileBuffers map[string]*bytes.Buffer
 
+type variable struct {
+	FullPath string
+	Type     pythonType
+	Value    interface{}
+}
 type function struct {
-	Name      string
+	FullPath  string
 	Functions map[string]*function
+	Variables map[string]*variable
 }
 
 type pythonFile struct {
