@@ -19,16 +19,24 @@ const (
 	pTuple
 	pList
 	pDict
+	pObject
 )
 
 var pythonPaths []string
 var fileBuffers map[string]*bytes.Buffer
+
+type class struct {
+	FullPath   string
+	Methods    map[string]*function
+	Attributes map[string]*variable
+}
 
 type variable struct {
 	FullPath string
 	Type     pythonType
 	Value    interface{}
 }
+
 type function struct {
 	FullPath  string
 	Functions map[string]*function
@@ -39,6 +47,7 @@ type pythonFile struct {
 	Path      string
 	Imports   map[string]string
 	Functions map[string]*function
+	Classes   map[string]*class
 }
 
 func getPythonPaths() {
