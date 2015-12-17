@@ -1,53 +1,55 @@
 package pyramidtrace
 
 // pyID (python object id) is [parent 0xXXXXXXXX identifier, 0xXXXXXXXX]
-type pyID [2]uint32
+
+type pyID uint32
 type pythonType int
+type subTreeNode struct {
+	Depth  int
+	Tokens []*Token
+}
+
+var defMap = map[uint32]*Token{}
 
 const (
-	pString pythonType = iota
-	pInt
-	pFloat
-	pBoolean
-	pTuple
-	pList
-	pDict
-	pObject
+	pFunc pythonType = iota
+	pClass
 )
-
-func (p pythonType) toString() string {
-	var a = "pStringpIntpFloatpBooleanpTuplepListpDictpObject"
-	var b = []uint8{0, 7, 11, 17, 25, 31, 36, 41}
-	if int(p) == len(b)-1 {
-		return a[41:]
-	}
-	return a[b[p]:b[p+1]]
-}
 
 type tracer []pyID
 
-type class struct {
-	FullPath   string
-	Methods    map[string]*function
-	Attributes map[string]*variable
+type Token struct {
+	Type     int
+	Parent   *Token
+	Children []*Token
+	Name     string
 }
 
-type variable struct {
-	FullPath string
-	Type     pythonType
-	Value    interface{}
+func (t Token) GetSubTree() string {
+	var depthChar = "   "
+	var depthPrefix = "|--"
+	var currDepth = 0
+	var treeString string
+	a := t.walk(0)
+	for _, v := range a {
+		if v.Depth < currDepth {
+			currDepth--
+			depthPrefix = depthPrefix[3:]
+		} else if v.Depth > currDepth {
+			currDepth++
+			depthPrefix = depthChar + depthPrefix
+		}
+		for _, s := range v.Tokens {
+			treeString += depthPrefix + s.Name
+		}
+	}
+	return "" //for now
 }
 
-type function struct {
-	FullPath  string
-	Functions map[string]*function
-	Variables map[string]*variable
-}
-
-type pythonFile struct {
-	tracer
-	Path      string
-	Imports   map[string]string
-	Functions map[string]*function
-	Classes   map[string]*class
+func (t Token) walk(depth int) []subTreeNode {
+	var a = []subTreeNode{}
+	for _, v := range t.Children {
+		a = append(a, v.walk(depth+1)...)
+	}
+	return a
 }
