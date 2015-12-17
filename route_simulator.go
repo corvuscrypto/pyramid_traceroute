@@ -1,4 +1,4 @@
-package main
+package pyramidtrace
 
 import (
 	"bytes"
@@ -9,46 +9,8 @@ import (
 	"strings"
 )
 
-type pythonType int
-
-const (
-	pString pythonType = iota
-	pInt
-	pFloat
-	pBoolean
-	pTuple
-	pList
-	pDict
-	pObject
-)
-
-var pythonPaths []string
+var pythonPaths = []string{}
 var fileBuffers map[string]*bytes.Buffer
-
-type class struct {
-	FullPath   string
-	Methods    map[string]*function
-	Attributes map[string]*variable
-}
-
-type variable struct {
-	FullPath string
-	Type     pythonType
-	Value    interface{}
-}
-
-type function struct {
-	FullPath  string
-	Functions map[string]*function
-	Variables map[string]*variable
-}
-
-type pythonFile struct {
-	Path      string
-	Imports   map[string]string
-	Functions map[string]*function
-	Classes   map[string]*class
-}
 
 func getPythonPaths() {
 	var output bytes.Buffer
@@ -57,9 +19,13 @@ func getPythonPaths() {
 	if comm.Run() != nil {
 		log.Fatal("Can't find python paths")
 	}
-	for _, v := range strings.Split(output.String(), "\n") {
+	for _, v := range strings.Split(output.String(), "\r\n") {
+		if v == "" {
+			continue
+		}
 		pythonPaths = append(pythonPaths, v)
 	}
+
 }
 
 func getFileBuffer(filePath string) *bytes.Buffer {
@@ -74,10 +40,12 @@ func getFileBuffer(filePath string) *bytes.Buffer {
 	}
 	data, _ := ioutil.ReadAll(f)
 	newBuffer.Write(data)
+
 	fileBuffers[filePath] = &newBuffer
 	return &newBuffer
 }
 
-func main() {
+func Trace() {
 	getPythonPaths()
+
 }
