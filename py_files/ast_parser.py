@@ -7,9 +7,10 @@ def walk_functions(scope,depth,stack):
     for func in ast.iter_child_nodes(scope):
         if isinstance(func, ast.FunctionDef):
             stack.append((depth, func.name))
+            walk_functions(func,depth+1,stack)
         if isinstance(func, ast.ClassDef):
             stack.append((depth, "__CLASS__."+func.name))
-        walk_functions(func,depth+1,stack)
+            walk_functions(func,depth+1,stack)
     return stack
 
 def parse_ast(file):
