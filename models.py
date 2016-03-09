@@ -41,8 +41,6 @@ class IfStmt():
             pass
         else:
             if isinstance(test, ast.BoolOp):
-                print ast_helpers.parse_bool(test)
+                return "if "+ast_helpers.parse_bool(test)
             elif isinstance(test, ast.Compare):
-                print test.__dict__
-                pass
-        return "test"
+                return "if "+ ast_helpers.parse_compare(test)

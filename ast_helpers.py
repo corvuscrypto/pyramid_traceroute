@@ -9,6 +9,14 @@ def node_to_string(node):
         return " and "
     elif isinstance(node, ast.Eq):
         return " == "
+    elif isinstance(node, ast.Lt):
+        return " < "
+    elif isinstance(node, ast.Gt):
+        return " > "
+    elif isinstance(node, ast.GtE):
+        return " >= "
+    elif isinstance(node, ast.LtE):
+        return " <= "
     elif isinstance(node, ast.Or):
         return " or "
     elif isinstance(node, ast.If):
@@ -24,9 +32,9 @@ def parse_bool(node):
     strings = []
     op = node_to_string(node.op)
     def to_text(v):
-        if isinstance(val, ast.Compare):
+        if isinstance(v, ast.Compare):
             return parse_compare(v)
-        elif isinstance(val, ast.BoolOp):
+        elif isinstance(v, ast.BoolOp):
             return "("+parse_bool(v)+")"
         else:
             return node_to_string(v)
@@ -36,13 +44,20 @@ def parse_bool(node):
 
 def parse_compare(node):
     strings = []
-    op = node_to_string(node.ops[0])
+    ops = []
+    for op in node.ops:
+        ops.append(node_to_string(op))
     def to_text(v):
-        if isinstance(v, ast.BoolOp):
+        if isinstance(v, ast.Compare):
+            return parse_compare(v)
+        elif isinstance(v, ast.BoolOp):
             return parse_bool(v)
         else:
             return node_to_string(v)
     strings.append(to_text(node.left))
     for val in node.comparators:
         strings.append(to_text(val))
-    return op.join(strings)
+    result = strings[0]
+    for i in range(len(ops)):
+        result += ops[i]+strings[i+1]
+    return result

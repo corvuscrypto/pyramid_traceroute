@@ -1,2 +1,2 @@
-if (x and y == 5 or f()==a) or (x==2 and y==7):
+if x== 2 < 5 > 3 >234 <324444 and sex == "yes":
     pass
