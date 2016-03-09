@@ -3,6 +3,10 @@ import ast
 def node_to_string(node):
     if isinstance(node, ast.Str):
         return node.s
+    elif isinstance(node, ast.BoolOp):
+        return parse_bool(node)
+    elif isinstance(node, ast.Compare):
+        return parse_compare(node)
     elif isinstance(node, ast.In):
         return "in"
     elif isinstance(node, ast.And):
@@ -26,7 +30,7 @@ def node_to_string(node):
     elif isinstance(node, ast.Num):
         return str(node.n)
     elif isinstance(node, ast.Call):
-        return node.func.id +"("+", ".join([x for x in node.args])+")"
+        return node.func.id +"("+", ".join([node_to_string(x) for x in node.args])+")"
     return str(node.__class__)
 def parse_bool(node):
     strings = []
