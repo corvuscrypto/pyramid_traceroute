@@ -30,9 +30,28 @@ class ControlCall(Call):
         self.clause = clause
         super(self.__class__, self).__init__(function)
 
+class ConditionalSet():
+    def __init__(self, node):
+        self.conditionals = []
+        x = node
+        while(isinstance(x, ast.If)):
+            ast_helpers.parsed_scope_nodes.append(x)
+            self.conditionals.append(IfStmt(x))
+
+            if len(x.orelse)>0 and isinstance(x.orelse[0], ast.If):
+                x = x.orelse[0]
+            elif x.orelse != []:
+                x = x.orelse
+            else:
+                x = None
+        if x is not None:
+            self.conditionals.append(ElseStmt(x))
+        print [x.clause for x in self.conditionals]
+
 class IfStmt():
     def __init__(self, node):
         self.clause = IfStmt.compile_clause(node)
+        self.body = None
 
     @staticmethod
     def compile_clause(node):
@@ -41,8 +60,13 @@ class IfStmt():
             pass
         else:
             if isinstance(test, ast.BoolOp):
-                return "if "+ast_helpers.parse_bool(test)
+                return ast_helpers.parse_bool(test)
             elif isinstance(test, ast.Compare):
-                return "if "+ ast_helpers.parse_compare(test)
+                return ast_helpers.parse_compare(test)
             else:
-                return "if "+ ast_helpers.node_to_string(test)
+                return ast_helpers.node_to_string(test)
+
+class ElseStmt():
+    def __init__(self, body):
+        self.clause = "else"
+        self.body = None

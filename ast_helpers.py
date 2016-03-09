@@ -1,5 +1,7 @@
 import ast
 
+parsed_scope_nodes = []
+
 def node_to_string(node):
     if isinstance(node, ast.Str):
         return node.s
