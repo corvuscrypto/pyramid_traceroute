@@ -44,3 +44,5 @@ class IfStmt():
                 return "if "+ast_helpers.parse_bool(test)
             elif isinstance(test, ast.Compare):
                 return "if "+ ast_helpers.parse_compare(test)
+            else:
+                return "if "+ ast_helpers.node_to_string(test)
