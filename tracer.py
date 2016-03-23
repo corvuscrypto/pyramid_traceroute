@@ -13,10 +13,16 @@ class Walker(ast.NodeVisitor):
             if isinstance(n, ast.FunctionDef):
                 if ctx:
                     self.functions.append(ctx+'.'+n.name)
+                    self.grab_definitions(n, ctx+'.'+n.name)
                 else:
                     self.functions.append(n.name)
+                    self.grab_definitions(n, n.name)
+            else:
+                if ctx:
+                    self.grab_definitions(n, ctx)
+                else:
+                    self.grab_definitions(n, '')
 
-                self.grab_definitions(n, n.name)
 
     def walk_file(self, f):
         self.ctx = f
@@ -40,9 +46,10 @@ class Walker(ast.NodeVisitor):
         func = node.func
         name = self.get_alias(func)
         if name:
-            for i in range(len(name.split('.'))):
-                s = name.split('.')
+            s = name.split('.')
+            for i in range(len(s)):
                 cap = len(s)-i
+                print s[:cap]
                 if '.'.join(s[:cap]) in self.functions:
                     print name
         ast.NodeVisitor.generic_visit(self, node)
@@ -53,6 +60,8 @@ class Walker(ast.NodeVisitor):
     def get_alias(self, node, postfix=''):
         if isinstance(node, ast.Name):
             name = node.id
+            if name=="test2":
+                print node.__dict__, postfix
             name = self.aliases.get(name,name)
             if postfix:
                 name+='.'+postfix
@@ -61,6 +70,9 @@ class Walker(ast.NodeVisitor):
             return self.get_alias(node.value, node.attr)
 
 def test():
+    def test2():
+        pass
+    test2()
     pass
 
 if __name__ == "__main__":
