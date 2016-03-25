@@ -8,18 +8,35 @@ class Walker(ast.NodeVisitor):
         self.functions = []
         super(Walker, self).__init__()
 
-    def grab_definitions(self, node):
+    def grab_local_definitions(self, node, ctx=''):
         for n in ast.iter_child_nodes(node):
-            if isinstance(n, ast.FunctionDef):
-                subchild = self.grab_definitions(n)
-                if subchild:
-                    self.functions.append(n.name+'.'+subchild)
-                self.functions.append(n.name)
-            elif isinstance(n, ast.ClassDef):
-                continue
-            else:
-                self.grab_definitions(n)
+            if isinstance(n, ast.FunctionDef) or isinstance(n,ast.ClassDef):
+                temp_ctx = ctx+n.name
+                if not ctx:
+                    self.functions.append(n.name)
+                else:
+                    self.functions.append(temp_ctx)
+                subfuncs = self.grab_local_definitions(n, temp_ctx+'.')
         return ''
+
+    def grab_external_import_aliases(self, node):
+        for n in ast.iter_child_nodes(node):
+            self.grab_external_import_aliases(n)
+            if isinstance(n, ast.Import):
+                for x in n.names:
+                    name = x.name
+                    asname = x.asname
+                    if asname is None:
+                        asname = name
+                    self.aliases[asname]=name
+            elif isinstance(n, ast.ImportFrom):
+                module = n.module
+                for x in n.names:
+                    name = x.name
+                    asname = x.asname
+                    if asname is None:
+                        asname = name
+                    self.aliases[asname]=module+'.'+name
 
     def walk_file(self, f):
         self.ctx = f
@@ -27,7 +44,8 @@ class Walker(ast.NodeVisitor):
         self.functions = []
         with open(f) as fil:
             node = ast.parse(fil.read())
-            self.grab_definitions(node)
+            self.grab_local_definitions(node)
+            self.grab_external_import_aliases(node)
             print self.functions
             self.visit(node)
 
