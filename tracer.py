@@ -38,6 +38,9 @@ class Walker(ast.NodeVisitor):
                         asname = name
                     self.aliases[asname]=module+'.'+name
 
+    def walk_routes(self,node):
+        pass
+
     def walk_file(self, f):
         self.ctx = f
         self.aliases = {}
@@ -46,28 +49,16 @@ class Walker(ast.NodeVisitor):
             node = ast.parse(fil.read())
             self.grab_local_definitions(node)
             self.grab_external_import_aliases(node)
-            print self.functions
             self.visit(node)
 
-    def visit_Import(self, node):
-        for name in node.__dict__['names']:
-            if name.asname:
-                self.functions.append(name.asname)
-                self.aliases[name.asname] = name.name
-            else:
-                self.functions.append(name.name)
-            ast.NodeVisitor.generic_visit(self, node)
-
-    def visit_Call(self, node):
-        func = node.func
-        name = self.get_alias(func)
-        if name:
-            s = name.split('.')
-            for i in range(len(s)):
-                cap = len(s)-i
-        ast.NodeVisitor.generic_visit(self, node)
-
     def generic_visit(self, node):
+        try:
+            for decorator in node.decorator_list:
+                for keyword in decorator.keywords:
+                    if keyword.arg == "route_name":
+                        print keyword.value.s
+        except:
+            pass
         ast.NodeVisitor.generic_visit(self, node)
 
     def get_alias(self, node, postfix=''):
@@ -79,7 +70,12 @@ class Walker(ast.NodeVisitor):
             return name
         elif isinstance(node, ast.Attribute):
             return self.get_alias(node.value, node.attr)
+def test_deco(f):
+    def func():
+        f()
+    return func
 
+@test_deco
 def test():
     def test2():
         pass
